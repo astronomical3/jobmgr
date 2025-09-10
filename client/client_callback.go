@@ -8,12 +8,13 @@ import (
 	"github.com/astronomical3/jobmgr/jobmgrcapnp"
 )
 
-
-//****************************************************************************
+// ****************************************************************************
 // Definition of the JobCallbackHandler struct that is used for creating
-//   a job-specific log, and logging job-specific activity in that job
-//   log file for historical references and for monitoring.
+//
+//	a job-specific log, and logging job-specific activity in that job
+//	log file for historical references and for monitoring.
 type JobCallbackHandler struct {
+	// implements jobmgrcapnp.JobCallbackHandler
 	jobName      string
 	jobId        string
 	process      string
@@ -22,27 +23,29 @@ type JobCallbackHandler struct {
 	doneChan     chan struct{}
 }
 
-// Constructor function for creating a new JobCallbackHandler that 
-//   eventually will be controlled by the Job Manager service.
+// Constructor function for creating a new JobCallbackHandler that
+//
+//	eventually will be controlled by the Job Manager service.
 func NewJobCallbackHandler(
-	jobName string, 
-	process string, 
+	jobName string,
+	process string,
 	clientLogger *ClientLoggingObject,
-) *JobCallbackHandler {
-	return &JobCallbackHandler{
-		jobName: jobName,
-		process: process,
+) JobCallbackHandler {
+	return JobCallbackHandler{
+		jobName:      jobName,
+		process:      process,
 		clientLogger: clientLogger,
-		doneChan: make(chan struct{}),
+		doneChan:     make(chan struct{}),
 	}
 }
 
 // Implementation of the jobmgrcapnp.JobCallback_initialUpdateJobInfo() RPC,
-//   which uses arguments (namely the "jobid" and "status" parameters) to add
-//   the values to populate remaining empty fields of the JobCallbackHandler,
-//   and also use the jobId to create a job log file dedicated specifically to
-//   a run of the submitted job using the clientLogger.
-func (jch *JobCallbackHandler) InitialUpdateJobInfo(
+//
+//	which uses arguments (namely the "jobid" and "status" parameters) to add
+//	the values to populate remaining empty fields of the JobCallbackHandler,
+//	and also use the jobId to create a job log file dedicated specifically to
+//	a run of the submitted job using the clientLogger.
+func (jch JobCallbackHandler) InitialUpdateJobInfo(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_initialUpdateJobInfo,
 ) error {
@@ -85,7 +88,6 @@ func (jch *JobCallbackHandler) InitialUpdateJobInfo(
 		return err
 	}
 
-	
 	jch.jobName = jobName
 	jch.jobId = jobId
 	jch.process = process
@@ -104,9 +106,9 @@ func (jch *JobCallbackHandler) InitialUpdateJobInfo(
 
 	// Create the job log file name.
 	jobLogFilename := fmt.Sprintf(
-		"%s-%s-%s.log", 
-		jch.jobName, 
-		jch.jobId, 
+		"%s-%s-%s.log",
+		jch.jobName,
+		jch.jobId,
 		datetimeString,
 	)
 
@@ -142,15 +144,16 @@ func (jch *JobCallbackHandler) InitialUpdateJobInfo(
 }
 
 // Implementation of the jobmgrcapnp.JobCallback_updateJobLog() RPC, which
-//   may or may not be used multiple times throighout the execution of the 
-//   process, and simply sends back a message for the clientLogger to add 
-//   to the job log file, as well as the overall client activity logs.
-func (jch *JobCallbackHandler) UpdateJobLog(
+//
+//	may or may not be used multiple times throighout the execution of the
+//	process, and simply sends back a message for the clientLogger to add
+//	to the job log file, as well as the overall client activity logs.
+func (jch JobCallbackHandler) UpdateJobLog(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_updateJobLog,
 ) error {
 	// Obtain the log message sent from the server
-    logMsg, err := call.Args().LogMsg()
+	logMsg, err := call.Args().LogMsg()
 	if err != nil {
 		jch.clientLogger.JobLogError(
 			jch.jobId,
@@ -170,11 +173,11 @@ func (jch *JobCallbackHandler) UpdateJobLog(
 		return err
 	}
 
-	// Add the log message to both the job file log and overall client 
+	// Add the log message to both the job file log and overall client
 	//   activity logs.
 	jch.clientLogger.JobLogInfo(jch.jobId, "process", jch.process, logMsg)
 	jch.clientLogger.ClientLogInfo(
-		"rpc", 
+		"rpc",
 		"jobmgrcapnp.JobCallback_updateJobLog",
 		fmt.Sprintf(
 			"Received log message from process '%s' in job '%s' (job ID %s)",
@@ -189,17 +192,18 @@ func (jch *JobCallbackHandler) UpdateJobLog(
 }
 
 // Implementation of the jobmgrcapnp.JobCallback_updateStatus() RPC, which may
-//   or may not be used multiple times throughout the execution of the process,
-//   and simply sends back the Status enum of "exec" (enum 1), in order to ensure
-//   the client that the job's requested process has either begun running or is 
-//   still running.
-func (jch *JobCallbackHandler) UpdateStatus(
+//
+//	or may not be used multiple times throughout the execution of the process,
+//	and simply sends back the Status enum of "exec" (enum 1), in order to ensure
+//	the client that the job's requested process has either begun running or is
+//	still running.
+func (jch JobCallbackHandler) UpdateStatus(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_updateStatus,
 ) error {
 	// Obtain the status enum sent from the server.
-	status := call.Args().Status()
-	
+	execStatus := call.Args().Status()
+
 	jch.clientLogger.ClientLogInfo(
 		"rpc",
 		"jobmgrcapnp.JobCallback_updateStatus",
@@ -211,16 +215,24 @@ func (jch *JobCallbackHandler) UpdateStatus(
 		),
 	)
 
-	// Add the status to the JobCallbackHandler.status field.
-	jch.status = status
+	// Add the status to the JobCallbackHandler.status field, and log that the
+	//   status is indeed "exec".
+	jch.status = execStatus
+	jch.clientLogger.JobLogInfo(
+		jch.jobId,
+		"process",
+		jch.process,
+		fmt.Sprintf("Process should now be starting, status is: %v", jch.status),	
+	)
 	return nil
 }
 
 // Implementation of the jobmgrcapnp.JobCallback_jobSuccessful() RPC, which
-//   is called only at the end of the process if it is successful.  Logs that 
-//   the job was successful, and receives the "success" status (enum 2) to add 
-//   into the status field of the JobCallbackHandler.
-func (jch *JobCallbackHandler) JobSuccessful(
+//
+//	is called only at the end of the process if it is successful.  Logs that
+//	the job was successful, and receives the "success" status (enum 2) to add
+//	into the status field of the JobCallbackHandler.
+func (jch JobCallbackHandler) JobSuccessful(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobSuccessful,
 ) error {
@@ -271,17 +283,23 @@ func (jch *JobCallbackHandler) JobSuccessful(
 	)
 
 	jch.status = successStatus
-
+	jch.clientLogger.JobLogInfo(
+		jch.jobId,
+		"process",
+		jch.process,
+		fmt.Sprintf("Process should now have been marked successful, status is: %v", jch.status),		
+	)
 	close(jch.doneChan)
 
 	return nil
 }
 
 // Implementation of the jobmgrcapnp.JobCallback_jobFailed() RPC, which is
-//   called only if some part of the process failed.  Logs the job error,
-//   and receives the "error" status (enum 3) to add into the status field
-//   of the JobCallbackHandler.
-func (jch *JobCallbackHandler) JobFailed(
+//
+//	called only if some part of the process failed.  Logs the job error,
+//	and receives the "error" status (enum 3) to add into the status field
+//	of the JobCallbackHandler.
+func (jch JobCallbackHandler) JobFailed(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobFailed,
 ) error {
@@ -342,18 +360,24 @@ func (jch *JobCallbackHandler) JobFailed(
 	)
 
 	jch.status = errorStatus
-	
+	jch.clientLogger.JobLogInfo(
+		jch.jobId,
+		"process",
+		jch.process,
+		fmt.Sprintf("Process should now have been marked as failed, status is: %v", jch.status),	
+	)
 	close(jch.doneChan)
 
 	return nil
 }
 
-// Implementation of the jobmgrcapnp.JobCallback_jobCancelled() RPC, which 
-//   is only called if the client decides to cancel the RPC, or the timeout
-//   context set by the client is timed out.  Logs that the job was cancelled
-//   by the client, and sets the status field in the JobCallbackHandler to 
-//   "cancel" (enum 4).
-func (jch *JobCallbackHandler) JobCancelled(
+// Implementation of the jobmgrcapnp.JobCallback_jobCancelled() RPC, which
+//
+//	is only called if the client decides to cancel the RPC, or the timeout
+//	context set by the client is timed out.  Logs that the job was cancelled
+//	by the client, and sets the status field in the JobCallbackHandler to
+//	"cancel" (enum 4).
+func (jch JobCallbackHandler) JobCancelled(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobCancelled,
 ) error {
@@ -414,7 +438,12 @@ func (jch *JobCallbackHandler) JobCancelled(
 	)
 
 	jch.status = cancelStatus
-
+	jch.clientLogger.JobLogInfo(
+		jch.jobId,
+		"process",
+		jch.process,
+		fmt.Sprintf("Process should now have been marked as cancelled, status is: %v", jch.status),	
+	)
 	close(jch.doneChan)
 
 	return nil
