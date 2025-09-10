@@ -236,6 +236,7 @@ func (jch JobCallbackHandler) JobSuccessful(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobSuccessful,
 ) error {
+	defer jch.clientLogger.JobLogClose(jch.jobId)
 	// Obtain all arguments from the server
 	args := call.Args()
 	logMsg, err := args.LogMsg()
@@ -303,6 +304,7 @@ func (jch JobCallbackHandler) JobFailed(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobFailed,
 ) error {
+	defer jch.clientLogger.JobLogClose(jch.jobId)
 	// Obtain all arguments from the server
 	args := call.Args()
 	logMsg, err := args.LogMsg()
@@ -381,6 +383,7 @@ func (jch JobCallbackHandler) JobCancelled(
 	ctx context.Context,
 	call jobmgrcapnp.JobCallback_jobCancelled,
 ) error {
+	defer jch.clientLogger.JobLogClose(jch.jobId)
 	// Obtain all arguments from the server
 	args := call.Args()
 	logMsg, err := args.LogMsg()
