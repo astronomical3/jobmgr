@@ -51,7 +51,7 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 	terminalLogger = log.With(terminalLogger, "time", log.DefaultTimestampUTC)
 
 	// Add filepath to clientlogs directory for the whole job log file path
-	clientLogFilename = "jobmgr/client/clientlogs/" + clientLogFilename + ".log"
+	clientLogFilename = "jobmgr/client/clientlogs/" + clientLogFilename
 
 	// Create the client log file object and its logger
 	clientLogFile, err := os.OpenFile(clientLogFilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
