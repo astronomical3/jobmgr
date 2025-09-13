@@ -6,35 +6,40 @@ import (
 	"net"
 	"time"
 
+	"capnproto.org/go/capnp/v3"
 	"capnproto.org/go/capnp/v3/rpc"
 	"github.com/astronomical3/jobmgr/jobmgrcapnp"
 )
 
 // ****************************************************************************************
-// Definition of the ClientRequestObject that will actually submit the requested job into
-//
-//	the Job Manager service (aka its Job Executor service), and query and/or cancel the
-//	job.
+// Definition of the ClientRequestObject, the core component of the Job Manager client application
+//   that will actually submit the requested job into the Job Manager Server (via its
+//   Job Executor service), and then query (aka monitor) and/or cancel the submitted
+//   job using the Job Query/Cancel service.
 type ClientRequestObject struct {
+	// Initial information upon creation of the new client request
 	address            string
 	port               string
-	timeout            int
-	regConn            net.Conn
-	rpcConn            *rpc.Conn
-	jobSubmission      jobmgrcapnp.JobSubmitInfo
 	jobName            string
 	process            string
+	timeout            int
+	clientLogger       *ClientLoggingObject
+
+	// Connections, handlers, and capabilities that the client request object will
+	//   create or obtain throughout the job submission procedure.
+	regConn            net.Conn
+	rpcConn            *rpc.Conn
 	jobMgrCap          jobmgrcapnp.JobExecutor
 	jobQueryCancel     jobmgrcapnp.JobQueryCancel
 	jobCallbackHandler JobCallbackHandler
 	jobCallbackCap     jobmgrcapnp.JobCallback
-	clientLogger       *ClientLoggingObject
 }
 
 // Constructor function for creating a new ClientRequestObject.
-func NewRequest(jobSubmission jobmgrcapnp.JobSubmitInfo, address, port string, timeout int, clientLogger *ClientLoggingObject) *ClientRequestObject {
+func NewRequest(jobName, process, address, port string, timeout int, clientLogger *ClientLoggingObject) *ClientRequestObject {
 	return &ClientRequestObject{
-		jobSubmission: jobSubmission,
+		jobName:       jobName,
+		process:       process,
 		address:       address,
 		port:          port,
 		timeout:       timeout,
@@ -43,11 +48,8 @@ func NewRequest(jobSubmission jobmgrcapnp.JobSubmitInfo, address, port string, t
 }
 
 // Connects to the server, and also creates a JobCallbackHandler and a jobmgrcapnp.JobCallback
-//
 //	capability to return when it submits the job.
 func (req *ClientRequestObject) ConnectToServer() error {
-	req.jobName, _ = req.jobSubmission.JobName()
-	req.process, _ = req.jobSubmission.Process()
 	req.clientLogger.ClientLogInfo(
 		"object",
 		"ClientRequestObject",
@@ -60,6 +62,7 @@ func (req *ClientRequestObject) ConnectToServer() error {
 
 	max_tries := 3
 	var err error
+	// 3 tries to get the base dial-up connection from the client to the Job Manager Server
 	for i := 0; i < max_tries; i++ {
 		req.regConn, err = net.Dial("tcp", net.JoinHostPort(req.address, req.port))
 		if err != nil {
@@ -95,12 +98,17 @@ func (req *ClientRequestObject) ConnectToServer() error {
 		"ClientRequestObject.ConnectToServer",
 		"Dialing is successful.  RPC stream connection to server is being created now...",
 	)
+	// Wrap the base dial-up connection in a Cap'n Proto RPC stream connection to the server
+	//   for sending and receiving of RPCs, capabilities, promises, results, etc.
 	req.rpcConn = rpc.NewConn(rpc.NewStreamTransport(req.regConn), nil)
 	req.clientLogger.ClientLogInfo(
 		"method",
 		"ClientRequestObject.ConnectToServer",
 		"RPC stream connection to server is created",
 	)
+	// Get the bootstrap/initial client, which is the client capability to the Job Manager
+	//   Server's Job Executor service.  This is the service through which job submission
+	//   is actually done.
 	req.jobMgrCap = jobmgrcapnp.JobExecutor(req.rpcConn.Bootstrap(context.Background()))
 	req.clientLogger.ClientLogInfo(
 		"method",
@@ -149,13 +157,39 @@ func (req *ClientRequestObject) SubmitJob() error {
 		),
 	)
 
+	// Create a jobmgrcapnp.JobSubmitInfo structure, named jobSubmission, which you will pass as a
+	//   parameter to the jobmgrcapnp.JobExecutor_submitJob() RPC.
+	// First, create a capnp.Segment to add field parameters to.
+	_, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
+	if err != nil {
+		req.clientLogger.ClientLogError(
+			"method",
+			"ClientRequestObject.SubmitJob",
+			fmt.Sprintf("Failed to create new capnp.Segment: %v", err),
+		)
+		return err
+	}
+	// Second, create a NewJobSubmitInfo() struct, jobSubmission, where you will set the fields
+	//   containing the job submission information.
+	jobSubmission, err := jobmgrcapnp.NewJobSubmitInfo(seg)
+	if err != nil {
+		req.clientLogger.ClientLogError(
+			"method",
+			"ClientRequestObject.SubmitJob",
+			fmt.Sprintf("Failed to create new jobmgrcapnp.JobSubmitInfo: %v", err),
+		)
+		return err
+	}
+	jobSubmission.SetJobName(req.jobName)
+	jobSubmission.SetProcess(req.process)
+
 	// Submit the job, wait for job to submit and for client to get the jobmgrcapnp.JobQueryCancel object.
 	rpcCtx := context.Background()
 	// Get promise of submitting the job
 	submitJobPromise, submitJobPromRel := req.jobMgrCap.SubmitJob(
 		rpcCtx,
 		func(p jobmgrcapnp.JobExecutor_submitJob_Params) error {
-			jobInfoParErr := p.SetJobinfo(req.jobSubmission)
+			jobInfoParErr := p.SetJobinfo(jobSubmission)
 			if jobInfoParErr != nil {
 				return jobInfoParErr
 			}
