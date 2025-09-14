@@ -78,8 +78,8 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on INFO level.
 func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
-	level.Info(clo.terminalLogger).Log(key, value, "message", message)
-	level.Info(clo.clientFileLogger).Log(key, value, "message", message)
+	go level.Info(clo.terminalLogger).Log(key, value, "message", message)
+	go level.Info(clo.clientFileLogger).Log(key, value, "message", message)
 }
 
 // Method of the ClientLoggingObject that is used for simultaneously logging into the
@@ -87,8 +87,8 @@ func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on WARN level.
 func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
-	level.Warn(clo.terminalLogger).Log(key, value, "message", message)
-	level.Warn(clo.clientFileLogger).Log(key, value, "message", message)
+	go level.Warn(clo.terminalLogger).Log(key, value, "message", message)
+	go level.Warn(clo.clientFileLogger).Log(key, value, "message", message)
 }
 
 // Method of the ClientLoggingObject that is used for simultaneously logging into the
@@ -96,8 +96,8 @@ func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on ERROR level.
 func (clo *ClientLoggingObject) ClientLogError(key, value, message string) {
-	level.Error(clo.terminalLogger).Log(key, value, "error", message)
-	level.Error(clo.clientFileLogger).Log(key, value, "error", message)
+	go level.Error(clo.terminalLogger).Log(key, value, "error", message)
+	go level.Error(clo.clientFileLogger).Log(key, value, "error", message)
 }
 
 // Method of the ClientLoggingObject thay is used for closing any resources used by the
