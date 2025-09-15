@@ -133,6 +133,31 @@ func (j *JobHandler) countTo10() {
 		}
 	}
 
+	processEnd := time.Now()
+	processEndString := fmt.Sprintf(
+		"%v_%v_%v-%v%v%v",
+		processEnd.Year(),
+		processEnd.Month(),
+		processEnd.Day(),
+		processEnd.Hour(),
+		processEnd.Minute(),
+		processEnd.Second(),	
+	)
+	endString := fmt.Sprintf("~~~~~~~~~End Time: %s~~~~~~~~\n", processEndString)
+	_, jobErr = countTo10FileObj.Write([]byte(endString))
+	if jobErr != nil {
+		j.JobErrorHelper(
+			jobErr,
+			fmt.Sprintf(
+				"Job '%s' running process 'countTo10' (job ID %s) failed due to open file error in creating file %s: %v",
+				j.jobName,
+				j.jobId,
+				countTo10Filename,
+				jobErr,
+			),
+		)
+	}
+
 	// Now that the loop has fully and successfully executed, try to close the new 
 	//   countTo10 file.  If it cannot close, the error will be logged on both the
 	//   server and client side as a job error, and will set the job status to 
