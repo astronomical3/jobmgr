@@ -1,4 +1,4 @@
-package client
+package internal
 
 import (
 	"flag"
@@ -34,7 +34,7 @@ func NewCli(clientLogger *ClientLoggingObject) *Cli {
 	return &Cli{clientLogger: clientLogger}
 }
 
-// Method of the Cli object that loads the values of the flags of the `go run [jobmgr/client/]main.go` command.
+// Method of the Cli object that loads the values of the flags of the `go run [jobmgr/client/]client.go` command.
 func (cli *Cli) LoadFlagsAndParseCmd() {
 	// Loading address and port flag values for connecting to the Job Manager Service server.
 	cli.address = flag.String("addr", "localhost", "address of the Job Manager Service server")
