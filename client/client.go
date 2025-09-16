@@ -13,7 +13,7 @@ func main() {
 	// Create a ClientLoggingObject to start logging different activity throughout the client application.
 	clientLogger := internal.NewClientLoggingObject(clientLogFilepath)
 
-	// Create a new CLI object that will then take in the flags of the `go run [jobmgr/]client.go` command.
+	// Create a new CLI object that will then take in the flags of the `go run [jobmgr/client/]client.go` command.
 	cliObj := internal.NewCli(clientLogger)
 	cliObj.LoadFlagsAndParseCmd()
 	err := cliObj.SubmitJob()

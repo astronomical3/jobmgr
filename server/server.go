@@ -17,7 +17,7 @@ import (
 const serverLogFilepath = "jobmgr/server/serverlogs/server.log"
 
 func main() {
-	// Get the flags to the `go run [jobmgr/]server.go` command for the address and
+	// Get the flags to the `go run [jobmgr/server/]server.go` command for the address and
 	//   port of the listener to the server, and create the TCP address string
 	//   using those flags.
 	lisAddr := flag.String(
