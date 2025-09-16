@@ -11,7 +11,6 @@ import (
 
 // *************************************************************************************
 // Definition of the ClientLoggingObject struct, which different parts of the client
-//
 //	application (e.g., a ClientRequestObject, a JobCallbackHandler) can send their
 //	log messages to, to pass responsibility of logging all client activity --
 //	including special log files separate from the client terminal and file logs for
@@ -41,7 +40,6 @@ type ClientLoggingObject struct {
 }
 
 // Constructor function that creates a terminal logger to log all the activity in the
-//
 //	current client session, as well as a file for logging all historical client
 //	activity, and also a logger for that client history log file.
 func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
@@ -74,7 +72,6 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 }
 
 // Method of the ClientLoggingObject that is used for simultaneously logging into the
-//
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on INFO level.
 func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
@@ -83,7 +80,6 @@ func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
 }
 
 // Method of the ClientLoggingObject that is used for simultaneously logging into the
-//
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on WARN level.
 func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
@@ -92,7 +88,6 @@ func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
 }
 
 // Method of the ClientLoggingObject that is used for simultaneously logging into the
-//
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on ERROR level.
 func (clo *ClientLoggingObject) ClientLogError(key, value, message string) {
@@ -101,7 +96,6 @@ func (clo *ClientLoggingObject) ClientLogError(key, value, message string) {
 }
 
 // Method of the ClientLoggingObject thay is used for closing any resources used by the
-//
 //	object that need closing before the client session is exited.  Particularly used
 //	for closing the clientLogFile that is used for the clientFileLogger object.
 func (clo *ClientLoggingObject) Close() {
@@ -109,7 +103,6 @@ func (clo *ClientLoggingObject) Close() {
 }
 
 // Method of the ClientLoggingObject that is used for creating a new file to log activity
-//
 //	for a particular submitted job, and creating a logger to log job activity on the file.
 func (clo *ClientLoggingObject) AddJobLog(jobId, jobLogFilename string) {
 	// Create job log file for specific submitted job
@@ -128,7 +121,6 @@ func (clo *ClientLoggingObject) AddJobLog(jobId, jobLogFilename string) {
 }
 
 // Method of the ClientLoggingObject that is used for logging INFO-level information
-//
 //	regarding a job (with a given jobId) on the job file log specific to that jobId.
 func (clo *ClientLoggingObject) JobLogInfo(jobId, key, value, message string) {
 	clo.mu.Lock()
@@ -141,7 +133,6 @@ func (clo *ClientLoggingObject) JobLogInfo(jobId, key, value, message string) {
 }
 
 // Method of the ClientLoggingObject that is used for logging WARN-level information
-//
 //	regarding a job (with a given jobId) on the job file log specific to that jobId.
 func (clo *ClientLoggingObject) JobLogWarn(jobId, key, value, message string) {
 	clo.mu.Lock()
@@ -154,7 +145,6 @@ func (clo *ClientLoggingObject) JobLogWarn(jobId, key, value, message string) {
 }
 
 // Method of the ClientLoggingObject that is used for logging ERROR-level information
-//
 //	regarding a job (with a given jobId) on the job file log specific to that jobId.
 func (clo *ClientLoggingObject) JobLogError(jobId, key, value, message string) {
 	clo.mu.Lock()
@@ -167,7 +157,6 @@ func (clo *ClientLoggingObject) JobLogError(jobId, key, value, message string) {
 }
 
 // Method of the ClientLoggingObject that is used for closing any resources used by the
-//
 //	specific jobId's job file logger that need closing when job is completed, regardless
 //	of if it ends in success or error, or if job is cancelled or timed out.  Particularly used
 //	for closing the job log file corresponding to the jobId, remove that file from the
