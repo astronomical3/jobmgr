@@ -30,7 +30,8 @@ go.work
 # Project-specific ignores
 
 # Ignore all logs
-*.log
+client/clientlogs/*
+server/serverlogs/*
 
 # A folder that contains the results of processes run on the server.
 server/jobresults/*
