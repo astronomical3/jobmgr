@@ -8,7 +8,7 @@
 //   process_choices.go file, so that they serve as a guideline on how to register your own processes.
 //*************************************************************************************************************
 
-package server
+package internal
 
 import (
 	"fmt"

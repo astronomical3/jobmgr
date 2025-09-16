@@ -2,7 +2,7 @@
 //   so that a client that submitted the job can control the job by either querying/monitoring or cancelling
 //   the submitted job.  PLEASE DO NOT EDIT.
 
-package server
+package internal
 
 import (
 	"context"

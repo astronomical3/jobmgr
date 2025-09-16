@@ -1,7 +1,7 @@
 // Helper methods of the JobHandler that developers can use for identifying job continue, error, and success
 //   points.  PLEASE DO NOT EDIT.
 
-package server
+package internal
 
 import (
 	"context"
