@@ -31,3 +31,6 @@ go.work
 
 # Ignore all logs
 *.log
+
+# A folder that contains the results of processes run on the server.
+server/jobresults/*
