@@ -53,21 +53,21 @@ func NewServerLoggingObject(serverLogFilename string) *ServerLoggingObject {
 //   terminal log and server's log file.
 func (slo *ServerLoggingObject) ServerLogInfo(key, value, message string) {
 	go level.Info(slo.terminalLogger).Log(key, value, "message", message)
-	go level.Info(slo.serverFileLogger).Log(key, value, "message", message)
+	level.Info(slo.serverFileLogger).Log(key, value, "message", message)
 }
 
 // Method of the ServerLoggingObject for logging in a WARN-level message to both the server's
 //   terminal log and server's log file.
 func (slo *ServerLoggingObject) ServerLogWarn(key, value, message string) {
 	go level.Warn(slo.terminalLogger).Log(key, value, "message", message)
-	go level.Warn(slo.serverFileLogger).Log(key, value, "message", message)
+	level.Warn(slo.serverFileLogger).Log(key, value, "message", message)
 }
 
 // Method of the ServerLoggingObject for logging in an ERROR-level message to both the server's
 //   terminal log and server's log file.
 func (slo *ServerLoggingObject) ServerLogError(key, value, message string) {
 	go level.Error(slo.terminalLogger).Log(key, value, "error", message)
-	go level.Error(slo.serverFileLogger).Log(key, value, "error", message)
+	level.Error(slo.serverFileLogger).Log(key, value, "error", message)
 }
 
 // Method of the ServerLoggingObject for closing any resources used (e.g., the serverLogFile 
