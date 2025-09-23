@@ -22,8 +22,8 @@ import (
 
 // Basic iterative process that counts to 10.
 func (j *JobHandler) countTo10() {
-	// Change directory to jobresults.
-	err := os.Chdir("jobresults")
+	// Change directory to processresults.
+	err := os.Chdir("processresults")
 	if err != nil {
 		panic(err)
 	}
