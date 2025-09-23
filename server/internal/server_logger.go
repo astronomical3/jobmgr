@@ -31,6 +31,12 @@ func NewServerLoggingObject(serverLogFilename string) *ServerLoggingObject {
 	terminalLogger = level.NewFilter(terminalLogger, level.AllowInfo())
 	terminalLogger = log.With(terminalLogger, "time", log.DefaultTimestampUTC)
 
+	// Change directory to serverlogs.
+	err := os.Chdir("serverlogs")
+	if err != nil {
+		panic(err)
+	}
+	
 	// Create the server's persistent log file and its logger
 	serverLogFile, err := os.OpenFile(serverLogFilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {

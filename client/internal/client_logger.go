@@ -51,6 +51,12 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 	// Add filepath to clientlogs directory for the whole job log file path
 	//   clientLogFilename = "jobmgr/client/clientlogs/" + clientLogFilename
 
+	// Change directory to clientlogs.
+	err := os.Chdir("clientlogs")
+	if err != nil {
+		panic(err)
+	}
+
 	// Create the client log file object and its logger
 	clientLogFile, err := os.OpenFile(clientLogFilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {
@@ -105,6 +111,18 @@ func (clo *ClientLoggingObject) Close() {
 // Method of the ClientLoggingObject that is used for creating a new file to log activity
 //	for a particular submitted job, and creating a logger to log job activity on the file.
 func (clo *ClientLoggingObject) AddJobLog(jobId, jobLogFilename string) {
+	// Change directory to clientlogs.
+	err := os.Chdir("clientlogs")
+	if err != nil {
+		panic(err)
+	}
+
+	// Change directory to joblogs.
+	err = os.Chdir("joblogs")
+	if err != nil {
+		panic(err)
+	}
+	
 	// Create job log file for specific submitted job
 	jobLogFile, err := os.OpenFile(jobLogFilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {

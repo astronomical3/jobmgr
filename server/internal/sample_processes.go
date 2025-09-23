@@ -22,6 +22,12 @@ import (
 
 // Basic iterative process that counts to 10.
 func (j *JobHandler) countTo10() {
+	// Change directory to jobresults.
+	err := os.Chdir("jobresults")
+	if err != nil {
+		panic(err)
+	}
+	
 	// Create new filename
 	startDateTime := fmt.Sprintf(
 		"%v_%v_%v-%v%v%v",
