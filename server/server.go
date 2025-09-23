@@ -14,7 +14,7 @@ import (
 
 // Provide a fill path to the server.log file, which will be used for logging all
 //   server application activity history using the ServerLoggingObject.
-const serverLogFilepath = "jobmgr/server/serverlogs/server.log"
+const serverLogFilepath = "server.log"
 
 func main() {
 	// Get the flags to the `go run [jobmgr/server/]server.go` command for the address and

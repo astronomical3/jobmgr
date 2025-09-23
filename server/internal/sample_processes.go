@@ -18,7 +18,7 @@ import (
 	"github.com/astronomical3/jobmgr/jobmgrcapnp"
 )
 
-const countTo10FilePrefix = "jobmgr/server/jobresults/countTo10-"
+// const countTo10FilePrefix = "jobmgr/server/jobresults/countTo10-"
 
 // Basic iterative process that counts to 10.
 func (j *JobHandler) countTo10() {
@@ -32,7 +32,8 @@ func (j *JobHandler) countTo10() {
 		j.startTime.Minute(),
 		j.startTime.Second(),
 	)
-	countTo10Filename := countTo10FilePrefix + startDateTime + ".txt"
+	// countTo10Filename := countTo10FilePrefix + startDateTime + ".txt"
+	countTo10Filename := startDateTime + ".txt"
 
 	// Create the file to perform the countTo10 process on.
 	countTo10FileObj, jobErr := os.OpenFile(

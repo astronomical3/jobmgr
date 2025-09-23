@@ -49,7 +49,7 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 	terminalLogger = log.With(terminalLogger, "time", log.DefaultTimestampUTC)
 
 	// Add filepath to clientlogs directory for the whole job log file path
-	clientLogFilename = "jobmgr/client/clientlogs/" + clientLogFilename
+	//   clientLogFilename = "jobmgr/client/clientlogs/" + clientLogFilename
 
 	// Create the client log file object and its logger
 	clientLogFile, err := os.OpenFile(clientLogFilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
@@ -75,7 +75,7 @@ func NewClientLoggingObject(clientLogFilename string) *ClientLoggingObject {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on INFO level.
 func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
-	go level.Info(clo.terminalLogger).Log(key, value, "message", message)
+	level.Info(clo.terminalLogger).Log(key, value, "message", message)
 	level.Info(clo.clientFileLogger).Log(key, value, "message", message)
 }
 
@@ -83,7 +83,7 @@ func (clo *ClientLoggingObject) ClientLogInfo(key, value, message string) {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on WARN level.
 func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
-	go level.Warn(clo.terminalLogger).Log(key, value, "message", message)
+	level.Warn(clo.terminalLogger).Log(key, value, "message", message)
 	level.Warn(clo.clientFileLogger).Log(key, value, "message", message)
 }
 
@@ -91,7 +91,7 @@ func (clo *ClientLoggingObject) ClientLogWarn(key, value, message string) {
 //	terminalLogger and the clientFileLogger activity done on the scope of the entire
 //	client application.  This will be on ERROR level.
 func (clo *ClientLoggingObject) ClientLogError(key, value, message string) {
-	go level.Error(clo.terminalLogger).Log(key, value, "error", message)
+	level.Error(clo.terminalLogger).Log(key, value, "error", message)
 	level.Error(clo.clientFileLogger).Log(key, value, "error", message)
 }
 
