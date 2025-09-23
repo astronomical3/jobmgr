@@ -70,7 +70,7 @@ func NewJobHandler(jobName, jobId, process string, jobCallback jobmgrcapnp.JobCa
 //   Job Manager Service client application's core ClientRequestObject (representing the 
 //   specific job the client has submitted), so that the client can check that the submitted
 //   job is still running or not.
-func (j JobHandler) QueryJob(ctx context.Context, call jobmgrcapnp.JobQueryCancel_queryJob) error {
+func (j *JobHandler) QueryJob(ctx context.Context, call jobmgrcapnp.JobQueryCancel_queryJob) error {
 	// Create a jobIsActive boolean variable, and set it to true.
 	select {
 	case <-j.doneChan:
@@ -105,7 +105,7 @@ func (j JobHandler) QueryJob(ctx context.Context, call jobmgrcapnp.JobQueryCance
 //   the ClientRequestObject (representing the specific job the client app has submitted),
 //   so that the client can request that the specific job be cancelled (i.e., if their
 //   local timeout has reached or exceeded).
-func (j JobHandler) CancelJob(ctx context.Context, call jobmgrcapnp.JobQueryCancel_cancelJob) error {
+func (j *JobHandler) CancelJob(ctx context.Context, call jobmgrcapnp.JobQueryCancel_cancelJob) error {
 	// Always be sure, when this RPC is done, that the client capability to the
 	//   client application's job callback will be released, as this is a final RPC
 	//   call.

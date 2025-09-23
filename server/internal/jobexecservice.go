@@ -37,7 +37,7 @@ func NewJobExecutorHandler(serverLogger *ServerLoggingObject) *JobExecutorHandle
 }
 
 // Implementation of the jobmgrcapnp.JobExecutor_submitJob() RPC.
-func (jeh JobExecutorHandler) SubmitJob(ctx context.Context, call jobmgrcapnp.JobExecutor_submitJob) error {
+func (jeh *JobExecutorHandler) SubmitJob(ctx context.Context, call jobmgrcapnp.JobExecutor_submitJob) error {
 	// Get the structure of all arguments of the RPC from the client.
 	args := call.Args()
 
